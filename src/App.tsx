@@ -1,121 +1,75 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useEffect, useState } from 'react'
 import './App.css'
+import AttendanceForm from './components/forms/AttendanceForm'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [numOfWeeks, setNumOfWeeks] = useState<number>(4)
+
+  const [attendanceData, setAttendanceData] = useState<any[]>(Array(4).fill(null).map(() => ({ men: 0, women: 0, teens: 0, children: 0 })))
+
+  useEffect(() => {
+    setAttendanceData(Array(numOfWeeks).fill(null).map(() => ({ men: 0, women: 0, teens: 0, children: 0 })))
+  }, [numOfWeeks])
+  
+  const updateWeek = (weekNum: number, data: any): void => {
+    const updated = [... attendanceData]
+
+    updated[weekNum - 1] = data
+    setAttendanceData(updated)
+  }
+
+   // Calculate totals and averages
+  const totalMen = attendanceData.reduce((sum, week) => sum + (week.men || 0), 0)
+  const totalWomen = attendanceData.reduce((sum, week) => sum + (week.women || 0), 0)
+  const totalTeens = attendanceData.reduce((sum, week) => sum + (week.teens || 0), 0)
+  const totalChildren = attendanceData.reduce((sum, week) => sum + (week.children || 0), 0)
+
+  const avgMen = Math.floor(totalMen / numOfWeeks)
+  const avgWomen = Math.floor(totalWomen / numOfWeeks)
+  const avgTeens = Math.floor(totalTeens / numOfWeeks)
+  const avgChildren = Math.floor(totalChildren / numOfWeeks)
+
+  const highestAttendance = attendanceData.length > 0 ? Math.max(
+    ...attendanceData.map(week => week.men + week.women + week.teens + week.children)
+  ) : 0
+  const avgAttendance = (totalMen + totalWomen + totalTeens + totalChildren) / numOfWeeks
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+    <main className='p-8'>
+      {/* Intro section */}
+      <section className='flex flex-col gap-4 p-4'>
+        <h1 className='text-center text-5xl font-bold'>LFC MAAG Attendance Calculator</h1>
+        <h2 className='text-center text-2xl font-semibold'>Input Your Attendance Data & Generate Your Report</h2>
       </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
+      <section>
+        <form action="" className=''>
+          <label>
+            Number of Weeks:
+            <select name="numOfWeeks" id="numOfWeeks" className='border w-fit px-2 py-1 mx-4' onChange={(e) => setNumOfWeeks(Number(e.target.value))}>
+              <option value='4'>4</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+        </form>
       </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <section className='flex w-full gap-4 justify-center'>
+        { Array.from({ length: numOfWeeks }).map((_, index) => (
+          <AttendanceForm key={index} weekNumber={index + 1} updateWeek={(data) => updateWeek(index + 1, data)}/>
+        ))}
+      </section>
+
+     <section className="w-full mt-6 bg-red-600 hover:bg-red-700 text-white font-medium py-6 rounded-md transition px-4">
+        <h3 className="font-bold mb-4">Summary</h3>
+        <p>Total Men: {totalMen} | Average Men: {avgMen}</p>
+        <p>Total Women: {totalWomen} | Average Women: {avgWomen}</p>
+        <p>Total Teens: {totalTeens} | Average Teens: {avgTeens}</p>
+        <p>Total Children: {totalChildren} | Average Children: {avgChildren}</p>
+        <p>Highest Weekly Attendance: {highestAttendance}</p>
+        <p>Average Weekly Attendance: {avgAttendance}</p>
+      </section>
+    </main>
   )
 }
 
